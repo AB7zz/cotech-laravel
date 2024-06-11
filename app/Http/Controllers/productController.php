@@ -43,6 +43,42 @@ class productController extends Controller
         return response()->json(['success' => true, 'products' => $products, 'sumTotalValue' => array_sum(array_column($products, 'totalValueNumber'))]);
     }
 
+    public function edit($id){
+        $products = $this->readData();
+        $product = collect($products)->firstWhere('id', $id);
+        if(!$product){
+            return redirect()->route('coalition.index')->withErrors(['Product not found.']);
+        }
+
+        return view('coalition.edit', compact('product'));
+    }
+
+    public function update(Request $request, $id){
+        $request->validate([
+            'product_name' => 'required|string',
+            'quantity_in_stock' => 'required|integer',
+            'price_per_item' => 'required|numeric',
+        ]);
+
+        $products = $this->readData();
+        $productIndex = collect($products)->search(function($product) use ($id){
+            return $product['id'] == $id;
+        });
+
+        if($productIndex == false){
+            return redirect()->route('coalition.index')->withErrors(['Product not found.']);
+        }
+
+        $products[$productIndex]['productName'] = $request->product_name;
+        $products[$productIndex]['quantityInStock'] = $request->quantity_in_stock;
+        $products[$productIndex]['pricePerItem'] = $request->price_per_item;
+        $products[$productIndex]['totalValueNumber'] = $request->quantity_in_stock * $request->price_per_item;
+        
+        $this->writeData($products);
+
+        return redirect()->route('coalition.index')->with('success', 'Product updated successfully.');
+    }
+
     private function readData()
     {
         $path = storage_path($this->filePath);

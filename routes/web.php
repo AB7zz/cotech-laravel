@@ -16,3 +16,5 @@ use App\Http\Controllers\ProductController;
 
 Route::get('/', [ProductController::class, 'index'])->name('coalition.index');
 Route::post('/products', [ProductController::class, 'store'])->name('coalition.store');
+Route::post('/products/{id}/edit', [ProductController::class, 'store'])->name('coalition.edit');
+Route::post('/products/{id}', [ProductController::class, 'store'])->name('coalition.update');
