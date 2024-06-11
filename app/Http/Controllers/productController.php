@@ -20,6 +20,29 @@ class productController extends Controller
         return view('coalition.index', compact('products', 'sumTotalValue'));
     }
 
+    public function store(Request $request){
+        $request->validate([
+            'product_name' => 'required|string',
+        ]);
+
+        $products = $this->readData();
+
+        $newProduct = [
+            'id' => uniqid(),
+            'productName' => $request->product_name,
+            'quantityInStock' => $request->quantity_in_stock,
+            'pricePerItem' => $request->price_per_item,
+            'dateTimeSubmitted' => now()->toDateTimeString(),
+            'totalValueNumber' => $request->quantity_in_stock * $request->price_per_iterm,
+        ];
+
+        $products[] = $newProduct;
+
+        $this->writeData($products);
+
+        return response()->json(['success' => true, 'products' => $products, 'sumTotalValue' => array_sum(array_column($products, 'totalValueNumber'))]);
+    }
+
     private function readData()
     {
         $path = storage_path($this->filePath);
@@ -29,5 +52,10 @@ class productController extends Controller
 
         $data = File::get($path);
         return json_decode($data, true);
+    }
+
+    private function writeData($data){
+        $path = storage_path($this->filePath);
+        File::put($path, json_encode($data, JSON_PRETTY_PRINT));
     }
 }

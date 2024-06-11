@@ -15,3 +15,4 @@ use App\Http\Controllers\ProductController;
 */
 
 Route::get('/', [ProductController::class, 'index'])->name('coalition.index');
+Route::post('/products', [ProductController::class, 'store'])->name('coalition.store');
