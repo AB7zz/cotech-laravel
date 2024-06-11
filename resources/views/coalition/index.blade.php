@@ -3,89 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <title>PHP Skills Test</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>PHP Skills Test</h1>
-        <form id="productForm">
-            @csrf
-            <div class="form-group">
-                <label for="productName">Product Name</label>
-                <input type="text" class="form-control" id="productName" name="productName" required>
-            </div>
-            <div class="form-group">
-                <label for="quantityInStock">Quantity In Stock</label>
-                <input type="number" class="form-control" id="quantityInStock" name="quantityInStock" required>
-            </div>
-            <div class="form-group">
-                <label for="pricePerItem">Price Per Item</label>
-                <input type="text" class="form-control" id="pricePerItem" name="pricePerItem" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Quantity in Stock</th>
-                    <th>Price Per Item</th>
-                    <th>Datetime Submitted</th>
-                    <th>Total Value Number</th>
-                    <th>Edit</th>
-                </tr>
-            </thead>
-            <tbody id="productTableBody">
-
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5"><strong>Sum Total:</strong></td>
-                    <td id="sumTotalValue">{{ $sumTotalValue }}</td>
-                </tr>
-            </tfoot>
+<div class="container">
+    <h1>PHP Skills Test</h1>
+    <form id="productForm">
+        @csrf
+        <div class="form-group">
+            <label for="productName">Product Name</label>
+            <input type="text" class="form-control" id="productName" name="product_name" required>
         </div>
-    </div>
-    <script>
-        $(document).ready(function() {
-            $('#productForm').on('submit', function(e) {
-                e.preventDefault();
+        <div class="form-group">
+            <label for="quantityInStock">Quantity in Stock</label>
+            <input type="number" class="form-control" id="quantityInStock" name="quantity_in_stock" required>
+        </div>
+        <div class="form-group">
+            <label for="pricePerItem">Price per Item</label>
+            <input type="number" class="form-control" id="pricePerItem" name="price_per_item" step="0.01" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <hr>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity in Stock</th>
+            <th>Price per Item</th>
+            <th>Datetime Submitted</th>
+            <th>Total Value Number</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="productTableBody">
+        @foreach ($products as $product)
+            <tr>
+                <td>{{ $product['productName'] }}</td>
+                <td>{{ $product['quantityInStock'] }}</td>
+                <td>{{ $product['pricePerItem'] }}</td>
+                <td>{{ $product['dateTimeSubmitted'] }}</td>
+                <td>{{ $product['totalValueNumber'] }}</td>
+                <td><a href="{{ route('products.edit', $product['id']) }}" class="btn btn-warning btn-sm">Edit</a></td>
+            </tr>
+        @endforeach
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="5"><strong>Sum Total:</strong></td>
+            <td id="sumTotalValue">{{ $sumTotalValue }}</td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
 
-                $.ajax({
-                    type: 'POST',
-                    url: '{{ route('coalition.store') }}',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if(response.success){
-                            let products = response.products;
-                            let sumTotalValue = response.sumTotalValue;
+<script>
+    $(document).ready(function() {
+        $('#productForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                type: 'POST',
+                url: '{{ route('products.store') }}',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        let products = response.products;
+                        let sumTotalValue = response.sumTotalValue;
 
-                            $('#productTableBody').empty();
-                            products.forEach(product => {
-                                $('#productTableBody').append(`
-                                    <tr>
-                                        <td>${product.productName}</td>
-                                        <td>${product.quantityInStock}</td>
-                                        <td>${product.pricePerItem}</td>
-                                        <td>${product.dateTimeSubmitted}</td>
-                                        <td>${product.totalValueNumber}</td>
-                                        <td><a href="/products/${product.id}/edit" class="btn btn-warning btn-sm">Edit</a></td>
-                                    </tr>
-                                `)
-                            });
+                        $('#productTableBody').empty();
+                        products.forEach(product => {
+                            $('#productTableBody').append(`
+                                <tr>
+                                    <td>${product.productName}</td>
+                                    <td>${product.quantityInStock}</td>
+                                    <td>${product.pricePerItem}</td>
+                                    <td>${product.dateTimeSubmitted}</td>
+                                    <td>${product.totalValueNumber}</td>
+                                    <td><a href="/products/${product.id}/edit" class="btn btn-warning btn-sm">Edit</a></td>
+                                </tr>
+                            `);
+                        });
 
-                            $('#sumTotalValue').text(sumTotalValue);
-                            $('#productForm')[0].reset();
-                        }
-                    },
-                    error: function(response) {
-                        alert('Err');
+                        $('#sumTotalValue').text(sumTotalValue);
+                        $('#productForm')[0].reset();
                     }
-                })
-            })
-        })
-    </script>
+                },
+                error: function(response) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>
